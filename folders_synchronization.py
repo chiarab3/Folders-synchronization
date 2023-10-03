@@ -18,14 +18,6 @@ def sync_folders(source_folder, replica_folder, log_file):
   #Get the list of all files and directories in the source folder
   source_files = os.listdir(source_folder)
 
-  #Create a dictionary to store the MD5 checksums of all files in the source folder
-  source_file_checksums = {}
-  for file in source_files:
-    source_file_path = os.path.join(source_folder, file)
-    with open(source_file_path, "rb") as f:
-      source_file_checksums[file] = hashlib.md5(f.read()).hexdigest()
-      #print(f"CHECKSUM {file}: {source_file_checksums[file]}")
-
   #Iterate over all files in the source folder
   for file in source_files:
     source_file_path = os.path.join(source_folder, file)
@@ -36,17 +28,23 @@ def sync_folders(source_folder, replica_folder, log_file):
       log(f"Copying file {file} from source folder to replica folder", log_file)
       shutil.copy2(source_file_path, replica_file_path)
 
-    #If the file exists in the replica folder, check if it is up to date
     elif os.path.getmtime(source_file_path) > os.path.getmtime(replica_file_path):
-      #If the file in the replica folder is not up to date, copy it from the source folder
-      log(f"Updating file {file} in replica folder", log_file)
-      shutil.copy2(source_file_path, replica_file_path)
+    #Calculate the MD5 checksum for the source file
+      with open(source_file_path, "rb") as f:
+        source_checksum = hashlib.md5(f.read()).hexdigest()
 
-    #If the file in the replica folder is up to date, do nothing
+    #Calculate the MD5 checksum for the replica file
+      with open(replica_file_path, "rb") as f:
+        replica_checksum = hashlib.md5(f.read()).hexdigest()
+
+    #Compare the checksums to determine if the file is up to date
+      if source_checksum != replica_checksum:
+        log(f"Updating file {file} in replica folder", log_file)
+        shutil.copy2(source_file_path, replica_file_path)
     else:
       log(f"File {file} in replica folder is up to date", log_file)
-
-  # Iterate over all files in the replica folder that are not in the source folder
+      
+  #Iterate over all files in the replica folder that are not in the source folder
   for file in os.listdir(replica_folder):
     if file not in source_files:
       #If the file is not in the source folder, remove it from the replica folder
@@ -69,4 +67,5 @@ if __name__ == "__main__":
 
   args = parser.parse_args()
 
+  print("Periodic one-way synchronization of two folders")
   main(args.source_folder, args.replica_folder, args.sync_interval, args.log_file)
