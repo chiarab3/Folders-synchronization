@@ -4,11 +4,6 @@ The program folders_synchronization.py is written in Python and synchronizes two
 
 The program works by first getting a list of all files and directories in the source folder. It then creates a dictionary to store the MD5 checksums of all files in the source folder.
 
-Next, the program iterates over all files in the source folder. For each file, it checks if the file exists in the replica folder. If the file does not exist in the replica folder, the program copies it from the source folder.
-
-If the file exists in the replica folder, the program checks if the file is up to date. The program does this by comparing the MD5 checksum of the file in the source folder to the MD5 checksum of the file in the replica folder. If the MD5 checksums are different, the program copies the file from the source folder to the replica folder.
-
-Finally, the program iterates over all files in the replica folder that are not in the source folder. For each file, the program removes it from the replica folder.
 
 # Usage:
 
